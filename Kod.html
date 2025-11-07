@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concert Tracker 🎵</title>
+    <style>
+        :root {
+            --pink: #f8c8dc;
+            --light-pink: #fce4ec;
+            --dark-pink: #f48fb1;
+            --green: #c8e6c9;
+            --light-green: #e8f5e8;
+            --dark-green: #81c784;
+            --text: #5d4037;
+            --shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: linear-gradient(135deg, var(--light-pink) 0%, var(--light-green) 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 10px;
+        }
+        
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            text-align: center;
+            border: 3px solid var(--pink);
+        }
+        
+        h1 {
+            color: var(--text);
+            font-size: clamp(1.8em, 5vw, 2.5em);
+            margin-bottom: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 15px;
+            padding: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .tab {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: clamp(0.8em, 3vw, 1em);
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .tab.active {
+            background: var(--pink);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+            font-size: clamp(0.9em, 3vw, 1em);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--pink);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--dark-pink);
+        }
+        
+        .rating {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+            justify-content: center;
+        }
+        
+        .star {
+            font-size: clamp(20px, 5vw, 24px);
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.2s ease;
+            padding: 5px;
+        }
+        
+        .star.active {
+            color: #ffd700;
+        }
+        
+        button {
+            background: var(--pink);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: clamp(0.9em, 3vw, 1em);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: var(--dark-pink);
+            transform: translateY(-2px);
+        }
+        
+        .concert-item {
+            background: var(--light-green);
+            padding: 15px;
+            margin: 12px 0;
+            border-radius: 15px;
+            border-left: 5px solid var(--green);
+            transition: transform 0.3s ease;
+        }
+        
+        .concert-item:hover {
+            transform: translateX(3px);
+        }
+        
+        .concert-item.future {
+            background: var(--light-pink);
+            border-left-color: var(--pink);
+        }
+        
+        .concert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .concert-title {
+            font-size: clamp(1.1em, 4vw, 1.3em);
+            color: var(--text);
+            margin-right: 10px;
+        }
+        
+        .concert-type {
+            background: var(--green);
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: clamp(0.7em, 2.5vw, 0.8em);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .concert-item.future .concert-type {
+            background: var(--pink);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid var(--pink);
+        }
+        
+        .stat-number {
+            font-size: clamp(1.5em, 6vw, 2em);
+            font-weight: bold;
+            color: var(--dark-pink);
+            margin: 8px 0;
+        }
+        
+        .concert-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .delete-btn {
+            background: #ff6b6b;
+            font-size: clamp(0.8em, 2.5vw, 0.9em);
+        }
+        
+        .delete-btn:hover {
+            background: #ff5252;
+        }
+        
+        .concert-meta {
+            display: flex;
+            gap: 10px;
+            margin: 8px 0;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            background: rgba(255,255,255,0.7);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: clamp(0.8em, 2.5vw, 0.9em);
+        }
+        
+        .search-box {
+            margin-bottom: 15px;
+        }
+        
+        .search-box input {
+            border: 2px solid var(--green);
+            font-size: clamp(0.9em, 3vw, 1em);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            background: var(--light-green);
+            color: var(--text);
+            padding: 8px 12px;
+            border: 2px solid var(--green);
+            font-size: clamp(0.8em, 2.5vw, 0.9em);
+        }
+        
+        .filter-btn.active {
+            background: var(--green);
+        }
+        
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .status-future {
+            background: var(--pink);
+            color: white;
+        }
+        
+        .status-past {
+            background: var(--green);
+            color: var(--text);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text);
+            opacity: 0.7;
+        }
+        
+        .empty-state i {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Responsywność dla bardzo małych ekranów */
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 5px;
+            }
+            
+            header {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .tab {
+                padding: 10px 8px;
+                min-width: 100px;
+                font-size: 0.8em;
+            }
+            
+            .tab-content {
+                padding: 15px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .concert-item {
+                padding: 12px;
+            }
+            
+            .concert-actions {
+                flex-direction: column;
+            }
+            
+            .concert-actions button {
+                width: 100%;
+                margin: 2px 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+        }
+
+        /* Tablet */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .container {
+                padding: 0 20px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Desktop */
+        @media (min-width: 1025px) {
+            .container {
+                padding: 0 30px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .tabs {
+                flex-wrap: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 My Concert Journey</h1>
+            <p>Śledź swoje muzyczne przygody!</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('add')">➕ Dodaj</div>
+            <div class="tab" onclick="showTab('all')">📋 Wszystkie</div>
+            <div class="tab" onclick="showTab('past')">🎵 Minione</div>
+            <div class="tab" onclick="showTab('future')">🎯 Nadchodzące</div>
+            <div class="tab" onclick="showTab('stats')">📊 Statystyki</div>
+        </div>
+        
+        <!-- Formularz dodawania -->
+        <div id="add" class="tab-content active">
+            <h2>Dodaj nowy koncert</h2>
+            <form id="concertForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="artist">Wykonawca *</label>
+                        <input type="text" id="artist" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Data</label>
+                        <input type="date" id="date">
+                    </div>
+                    <div class="form-group">
+                        <label for="city">Miasto *</label>
+                        <input type="text" id="city" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="type">Typ wydarzenia</label>
+                        <select id="type">
+                            <option value="club">Klub</option>
+                            <option value="festival">Festival</option>
+                            <option value="stadium">Stadion</option>
+                            <option value="acoustic">Akustyczny</option>
+                            <option value="theater">Teatr</option>
+                            <option value="other">Inne</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="with">Z kim byłeś/aś?</label>
+                        <input type="text" id="with" placeholder="Przyjaciele, rodzina...">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Ocena</label>
+                    <div class="rating" id="rating">
+                        <span class="star" onclick="setRating(1)">★</span>
+                        <span class="star" onclick="setRating(2)">★</span>
+                        <span class="star" onclick="setRating(3)">★</span>
+                        <span class="star" onclick="setRating(4)">★</span>
+                        <span class="star" onclick="setRating(5)">★</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Notatki i wspomnienia</label>
+                    <textarea id="notes" rows="3" placeholder="Co było najlepsze? Jakie utwory grali?"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="isFuture"> To nadchodzący koncert
+                    </label>
+                </div>
+                
+                <button type="submit">💾 Zapisz Koncert</button>
+            </form>
+        </div>
+        
+        <!-- Wszystkie koncerty -->
+        <div id="all" class="tab-content">
+            <h2>Wszystkie koncerty</h2>
+            <div class="search-box">
+                <input type="text" id="searchAll" placeholder="🔍 Szukaj wykonawcy, miasta..." onkeyup="filterConcerts('all')">
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="setFilter('all', 'all')">Wszystkie</button>
+                <button class="filter-btn" onclick="setFilter('all', 'past')">Minione</button>
+                <button class="filter-btn" onclick="setFilter('all', 'future')">Nadchodzące</button>
+            </div>
+            <div id="allConcerts"></div>
+        </div>
+        
+        <!-- Minione koncerty -->
+        <div id="past" class="tab-content">
+            <h2>Twoje minione koncerty</h2>
+            <div class="search-box">
+                <input type="text" id="searchPast" placeholder="🔍 Szukaj wykonawcy, miasta..." onkeyup="filterConcerts('past')">
+            </div>
+            <div id="pastConcerts"></div>
+        </div>
+        
+        <!-- Nadchodzące koncerty -->
+        <div id="future" class="tab-content">
+            <h2>Nadchodzące koncerty</h2>
+            <div class="search-box">
+                <input type="text" id="searchFuture" placeholder="🔍 Szukaj wykonawcy, miasta..." onkeyup="filterConcerts('future')">
+            </div>
+            <div id="futureConcerts"></div>
+        </div>
+        
+        <!-- Statystyki -->
+        <div id="stats" class="tab-content">
+            <h2>Twoje statystyki koncertowe</h2>
+            <div class="stats-grid" id="statsGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        let concerts = JSON.parse(localStorage.getItem('concerts')) || [];
+        let currentRating = 0;
+        let currentFilter = {
+            'all': 'all',
+            'past': 'all',
+            'future': 'all'
+        };
+
+        // Pokazywanie zakładek
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabName === 'stats') {
+                updateStats();
+            } else {
+                displayConcerts();
+            }
+        }
+
+        // System ocen
+        function setRating(rating) {
+            currentRating = rating;
+            const stars = document.querySelectorAll('#rating .star');
+            stars.forEach((star, index) => {
+                star.classList.toggle('active', index < rating);
+            });
+        }
+
+        // Zapisywanie koncertów
+        function saveConcerts() {
+            localStorage.setItem('concerts', JSON.stringify(concerts));
+        }
+
+        // Dodawanie koncertu
+        document.getElementById('concertForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const isFuture = document.getElementById('isFuture').checked;
+            const concertDate = document.getElementById('date').value;
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Sprawdzanie czy data jest z przyszłości
+            const actualIsFuture = isFuture || (concertDate && concertDate > today);
+            
+            const newConcert = {
+                id: Date.now(),
+                artist: document.getElementById('artist').value,
+                date: concertDate,
+                city: document.getElementById('city').value,
+                type: document.getElementById('type').value,
+                with: document.getElementById('with').value,
+                rating: currentRating,
+                notes: document.getElementById('notes').value,
+                isFuture: actualIsFuture
+            };
+
+            concerts.push(newConcert);
+            saveConcerts();
+            
+            // Reset formularza
+            this.reset();
+            setRating(0);
+            document.getElementById('isFuture').checked = false;
+            
+            // Przełączenie na odpowiednią zakładkę
+            showTab(actualIsFuture ? 'future' : 'all');
+        });
+
+        // Wyświetlanie koncertów
+        function displayConcerts() {
+            displayAllConcerts();
+            displayPastConcerts();
+            displayFutureConcerts();
+        }
+
+        function displayAllConcerts() {
+            const container = document.getElementById('allConcerts');
+            let filteredConcerts = concerts;
+            
+            // Filtrowanie
+            if (currentFilter.all === 'past') {
+                filteredConcerts = concerts.filter(c => !c.isFuture);
+            } else if (currentFilter.all === 'future') {
+                filteredConcerts = concerts.filter(c => c.isFuture);
+            }
+            
+            // Sortowanie
+            filteredConcerts.sort((a, b) => {
+                if (!a.date && !b.date) return b.id - a.id;
+                if (!a.date) return 1;
+                if (!b.date) return -1;
+                return new Date(b.date) - new Date(a.date);
+            });
+            
+            if (filteredConcerts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i>🎵</i>
+                        <p>Brak koncertów do wyświetlenia</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = filteredConcerts.map(concert => `
+                    <div class="concert-item ${concert.isFuture ? 'future' : ''}">
+                        <div class="concert-header">
+                            <div class="concert-title">${concert.artist}</div>
+                            <div>
+                                <span class="concert-type">${getTypeName(concert.type)}</span>
+                                <span class="status-badge ${concert.isFuture ? 'status-future' : 'status-past'}">
+                                    ${concert.isFuture ? 'Nadchodzący' : 'Miniony'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="concert-meta">
+                            ${concert.date ? `<span class="meta-item">📅 ${new Date(concert.date).toLocaleDateString('pl-PL')}</span>` : ''}
+                            <span class="meta-item">🏙️ ${concert.city}</span>
+                            ${concert.rating ? `<span class="meta-item">⭐ ${'★'.repeat(concert.rating)}</span>` : ''}
+                            ${concert.with ? `<span class="meta-item">👥 ${concert.with}</span>` : ''}
+                        </div>
+                        ${concert.notes ? `<p>${concert.notes}</p>` : ''}
+                        <div class="concert-actions">
+                            <button onclick="toggleConcertStatus(${concert.id})">
+                                ${concert.isFuture ? '✅ Oznacz jako odbyty' : '🎯 Przenieś do nadchodzących'}
+                            </button>
+                            <button class="delete-btn" onclick="deleteConcert(${concert.id})">🗑️ Usuń</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function displayPastConcerts() {
+            const container = document.getElementById('pastConcerts');
+            const pastConcerts = concerts.filter(c => !c.isFuture)
+                .sort((a, b) => {
+                    if (!a.date && !b.date) return b.id - a.id;
+                    if (!a.date) return 1;
+                    if (!b.date) return -1;
+                    return new Date(b.date) - new Date(a.date);
+                });
+            
+            if (pastConcerts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i>🎵</i>
+                        <p>Jeszcze nie byłaś na żadnym koncercie</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = pastConcerts.map(concert => `
+                    <div class="concert-item">
+                        <div class="concert-header">
+                            <div class="concert-title">${concert.artist}</div>
+                            <span class="concert-type">${getTypeName(concert.type)}</span>
+                        </div>
+                        <div class="concert-meta">
+                            ${concert.date ? `<span class="meta-item">📅 ${new Date(concert.date).toLocaleDateString('pl-PL')}</span>` : ''}
+                            <span class="meta-item">🏙️ ${concert.city}</span>
+                            ${concert.rating ? `<span class="meta-item">⭐ ${'★'.repeat(concert.rating)}</span>` : ''}
+                            ${concert.with ? `<span class="meta-item">👥 ${concert.with}</span>` : ''}
+                        </div>
+                        ${concert.notes ? `<p>${concert.notes}</p>` : ''}
+                        <div class="concert-actions">
+                            <button onclick="toggleConcertStatus(${concert.id})">🎯 Przenieś do nadchodzących</button>
+                            <button class="delete-btn" onclick="deleteConcert(${concert.id})">🗑️ Usuń</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function displayFutureConcerts() {
+            const container = document.getElementById('futureConcerts');
+            const futureConcerts = concerts.filter(c => c.isFuture)
+                .sort((a, b) => {
+                    if (!a.date && !b.date) return a.id - b.id;
+                    if (!a.date) return 1;
+                    if (!b.date) return -1;
+                    return new Date(a.date) - new Date(b.date);
+                });
+            
+            if (futureConcerts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i>🎯</i>
+                        <p>Brak nadchodzących koncertów</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = futureConcerts.map(concert => `
+                    <div class="concert-item future">
+                        <div class="concert-header">
+                            <div class="concert-title">${concert.artist}</div>
+                            <span class="concert-type">${getTypeName(concert.type)}</span>
+                        </div>
+                        <div class="concert-meta">
+                            ${concert.date ? `<span class="meta-item">📅 ${new Date(concert.date).toLocaleDateString('pl-PL')}</span>` : ''}
+                            <span class="meta-item">🏙️ ${concert.city}</span>
+                            ${concert.with ? `<span class="meta-item">👥 ${concert.with}</span>` : ''}
+                        </div>
+                        ${concert.notes ? `<p>${concert.notes}</p>` : ''}
+                        <div class="concert-actions">
+                            <button onclick="toggleConcertStatus(${concert.id})">✅ Oznacz jako odbyty</button>
+                            <button class="delete-btn" onclick="deleteConcert(${concert.id})">🗑️ Usuń</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Filtrowanie koncertów
+        function filterConcerts(tab) {
+            const searchTerm = document.getElementById(`search${tab.charAt(0).toUpperCase() + tab.slice(1)}`).value.toLowerCase();
+            const containers = {
+                'all': 'allConcerts',
+                'past': 'pastConcerts', 
+                'future': 'futureConcerts'
+            };
+            
+            const container = document.getElementById(containers[tab]);
+            const items = container.getElementsByClassName('concert-item');
+            
+            for (let item of items) {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            }
+        }
+
+        // Ustawianie filtra
+        function setFilter(tab, filter) {
+            currentFilter[tab] = filter;
+            
+            // Aktualizacja przycisków
+            const buttons = event.target.parentElement.getElementsByClassName('filter-btn');
+            for (let btn of buttons) {
+                btn.classList.remove('active');
+            }
+            event.target.classList.add('active');
+            
+            displayAllConcerts();
+        }
+
+        // Nazwy typów wydarzeń
+        function getTypeName(type) {
+            const types = {
+                'club': 'Klub',
+                'festival': 'Festival',
+                'stadium': 'Stadion',
+                'acoustic': 'Akustyczny',
+                'theater': 'Teatr',
+                'other': 'Inne'
+            };
+            return types[type] || type;
+        }
+
+        // Usuwanie koncertu
+        function deleteConcert(id) {
+            if (confirm('Czy na pewno chcesz usunąć ten koncert?')) {
+                concerts = concerts.filter(c => c.id !== id);
+                saveConcerts();
+                displayConcerts();
+                if (document.getElementById('stats').classList.contains('active')) {
+                    updateStats();
+                }
+            }
+        }
+
+        // Zmiana statusu koncertu
+        function toggleConcertStatus(id) {
+            const concert = concerts.find(c => c.id === id);
+            if (concert) {
+                concert.isFuture = !concert.isFuture;
+                saveConcerts();
+                displayConcerts();
+                if (document.getElementById('stats').classList.contains('active')) {
+                    updateStats();
+                }
+            }
+        }
+
+        // Statystyki
+        function updateStats() {
+            const pastConcerts = concerts.filter(c => !c.isFuture);
+            const futureConcerts = concerts.filter(c => c.isFuture);
+            
+            // Liczba koncertów
+            const totalConcerts = pastConcerts.length;
+            const upcomingConcerts = futureConcerts.length;
+            
+            // Najpopularniejsi wykonawcy
+            const artistCount = {};
+            pastConcerts.forEach(concert => {
+                artistCount[concert.artist] = (artistCount[concert.artist] || 0) + 1;
+            });
+            const topArtist = Object.keys(artistCount).length > 0 
+                ? Object.keys(artistCount).reduce((a, b) => artistCount[a] > artistCount[b] ? a : b)
+                : 'Brak';
+            
+            // Miasta
+            const cities = [...new Set(pastConcerts.map(c => c.city))];
+            
+            // Typy wydarzeń
+            const typeCount = {};
+            pastConcerts.forEach(concert => {
+                typeCount[concert.type] = (typeCount[concert.type] || 0) + 1;
+            });
+            const topType = Object.keys(typeCount).length > 0
+                ? Object.keys(typeCount).reduce((a, b) => typeCount[a] > typeCount[b] ? a : b)
+                : 'Brak';
+            
+            // Średnia ocena
+            const ratedConcerts = pastConcerts.filter(c => c.rating > 0);
+            const avgRating = ratedConcerts.length > 0 
+                ? (ratedConcerts.reduce((sum, c) => sum + c.rating, 0) / ratedConcerts.length).toFixed(1)
+                : 'Brak ocen';
+
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card">
+                    <h3>🎵 Minione koncerty</h3>
+                    <div class="stat-number">${totalConcerts}</div>
+                    <p>Ogółem uczestnictw</p>
+                </div>
+                <div class="stat-card">
+                    <h3>🎯 Nadchodzące</h3>
+                    <div class="stat-number">${upcomingConcerts}</div>
+                    <p>Zaplanowane wydarzenia</p>
+                </div>
+                <div class="stat-card">
+                    <h3>🏆 Ulubiony wykonawca</h3>
+                    <div class="stat-number">${topArtist}</div>
+                    <p>Najczęściej oglądany</p>
+                </div>
+                <div class="stat-card">
+                    <h3>⭐ Średnia ocena</h3>
+                    <div class="stat-number">${avgRating}</div>
+                    <p>Z ${ratedConcerts.length} ocenionych</p>
+                </div>
+                <div class="stat-card">
+                    <h3>🏙️ Odwiedzone miasta</h3>
+                    <div class="stat-number">${cities.length}</div>
+                    <p>${cities.slice(0, 3).join(', ')}${cities.length > 3 ? '...' : ''}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>🎪 Ulubiony typ</h3>
+                    <div class="stat-number">${getTypeName(topType)}</div>
+                    <p>Najczęstszy format</p>
+                </div>
+            `;
+        }
+
+        // Inicjalizacja
+        displayConcerts();
+    </script>
+</body>
+</html>
